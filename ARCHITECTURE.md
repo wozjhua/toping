@@ -208,4 +208,3 @@ Android Input Daemon
 ## 开源仓库说明
 
 为了避免仓库过大，FFmpeg、libjpeg-turbo、Android `.so`、Windows `.dll/.exe`、签名文件和编译产物没有提交到 Git。需要恢复完整本地构建环境时，请参考 [THIRD_PARTY_DEPENDENCIES.md](THIRD_PARTY_DEPENDENCIES.md)。
-
