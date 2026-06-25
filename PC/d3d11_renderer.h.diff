@@ -1,0 +1,19 @@
+--- a/d3d11_renderer.h
++++ b/d3d11_renderer.h
+@@ -330,7 +330,16 @@
+     ID3D11RenderTargetView* rtv_{};
+     ID3D11VertexShader* vs_{};
+     ID3D11PixelShader* ps_{};
++    ID3D11PixelShader* psEnhance_{};
+     ID3D11InputLayout* inputLayout_{};
++    struct UpscaleCB {
++        float texelSize[2];
++        float sharpness;
++        float padding;
++    };
++    ID3D11Buffer* upscaleCb_{};
++    bool enableGpuEnhance_{ true };
++    float gpuEnhanceSharpness_{ 0.42f };
+     ID3D11Buffer* vertexBuffer_{};
+     ID3D11Buffer* roiVertexBuffer_{};
+     ID3D11Buffer* hudVertexBuffer_{};

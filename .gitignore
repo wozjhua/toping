@@ -1,0 +1,56 @@
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vs/
+*.iml
+
+# Android / Gradle
+.gradle/
+.kotlin/
+build/
+**/build/
+local.properties
+.externalNativeBuild/
+.cxx/
+captures/
+*.apk
+*.aab
+
+# Signing / local secrets
+*.jks
+*.keystore
+*.p12
+*.pem
+keystore.properties
+*release*.jks
+*keystore*.properties
+!*.example
+
+# Native build outputs and packaged binaries
+*.o
+*.obj
+*.so
+*.dll
+*.exe
+*.lib
+*.pdb
+*.ilk
+*.a
+*.class
+*.dex
+
+# Archives
+*.zip
+*.7z
+*.rar
+*.tar
+*.gz
+
+# Third-party binary/source packages kept outside the Git repository.
+**/ffmpeg-*/
+**/libjpeg-turbo64/
+**/libjpeg-turbo-build/
+**/libjpeg-turbo-src/
+**/libjpeg-turbo-3.1.4.1/
+

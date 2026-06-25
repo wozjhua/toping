@@ -1,0 +1,11 @@
+--- a/d3d11_cleanup.cpp
++++ b/d3d11_cleanup.cpp
+@@ -29,6 +29,8 @@
+         if (roiVertexBuffer_) roiVertexBuffer_->Release();
+         if (vertexBuffer_) vertexBuffer_->Release();
+         if (inputLayout_) inputLayout_->Release();
++        if (upscaleCb_) upscaleCb_->Release();
++        if (psEnhance_) psEnhance_->Release();
+         if (ps_) ps_->Release();
+         if (vs_) vs_->Release();
+         if (rtv_) rtv_->Release();

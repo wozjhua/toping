@@ -1,0 +1,40 @@
+--- a/d3d11_render_present.cpp
++++ b/d3d11_render_present.cpp
+@@ -156,9 +156,37 @@
+ 
+     ID3D11ShaderResourceView* visibleFrameSrv = (currentGpuFrame_ && currentGpuFrame_->srv) ? currentGpuFrame_->srv : frameSrv_;
+     if (visibleFrameSrv) {
++        const int enhanceW = currentFrame_.width > 0 ? currentFrame_.width : displayFrameW;
++        const int enhanceH = currentFrame_.height > 0 ? currentFrame_.height : displayFrameH;
++        const bool useGpuEnhance =
++            enableGpuEnhance_ &&
++            psEnhance_ &&
++            upscaleCb_ &&
++            enhanceW > 0 &&
++            enhanceH > 0;
++
++        if (useGpuEnhance) {
++            UpscaleCB cb{};
++            cb.texelSize[0] = 1.0f / static_cast<float>(enhanceW);
++            cb.texelSize[1] = 1.0f / static_cast<float>(enhanceH);
++            cb.sharpness = gpuEnhanceSharpness_;
++            cb.padding = 0.0f;
++            ctx_->UpdateSubresource(upscaleCb_, 0, nullptr, &cb, 0, 0);
++            ctx_->PSSetShader(psEnhance_, nullptr, 0);
++            ctx_->PSSetConstantBuffers(0, 1, &upscaleCb_);
++        }
++        else {
++            ctx_->PSSetShader(ps_, nullptr, 0);
++        }
++
+         ctx_->IASetVertexBuffers(0, 1, &vertexBuffer_, &stride, &offset);
+         ctx_->PSSetShaderResources(0, 1, &visibleFrameSrv);
+         ctx_->Draw(6, 0);
++
++        // Keep the existing plain shader path for ROI/HUD/overlay passes.
++        ID3D11Buffer* nullCb[1] = { nullptr };
++        ctx_->PSSetConstantBuffers(0, 1, nullCb);
++        ctx_->PSSetShader(ps_, nullptr, 0);
+     }
+ 
+     // Draw the H.264 center ROI only after a full JPEG background exists.

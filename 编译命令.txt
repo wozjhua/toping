@@ -1,0 +1,42 @@
+
+编译PC   需要的库文件  ndk 27.0.12077973  ffmpeg-8.1-full_build-shared  libjpeg-turbo64
+使用  x64 Native Tools Command Prompt for VS
+执行：
+cd /d D:\huilang3\touping
+set NDK_ROOT=D:\SDK\ndk\27.0.12077973
+set ANDROID_API=21
+set "FFMPEG_DIR=D:\huilang3\ffmpeg-8.1-full_build-shared"
+set "LIBJPEG_TURBO_DIR=D:\huilang3\libjpeg-turbo64"
+taskkill /F /IM d3d11_native_receiver_split.exe 2>nul
+call .\build_msvc_x64_split_no_rc.bat
+ 
+如果需要临时打开统计时：
+set PC_LOCK_ENABLE_STATS=1
+call .\build_msvc_x64_split_no_rc.bat
+
+如果需要临时关闭统计时关闭：
+set PC_LOCK_ENABLE_STATS=0
+call .\build_msvc_x64_split_no_rc.bat
+
+//编译安卓映射
+call .\build_android_pc_uinputd
+成功后会生成：pc_uinputd   
+
+
+以上是PC
+——————————————————————————————————————————————————————————————————————————————————————
+//编译安卓图像解码 需要 Android NDK  libjpeg-turbo-src   libjpeg-turbo-build  自行放在对应的文件夹  。假设你的 NDK 在：D:\Android\Sdk\ndk\27.0.12077973
+
+  使用  x64 Native Tools Command Prompt for VS
+ 安卓端编译命令   需要换成对应的文件目录    
+cd D:\huilang3\touping
+"D:\SDK\ndk\27.0.12077973\toolchains\llvm\prebuilt\windows-x86_64\bin\aarch64-linux-android21-clang++.cmd" ^
+  -std=c++17 -O3 -fPIC -shared -static-libstdc++ ^
+  D:\\huilang3\touping\native_center_crop_jpeg.cpp ^
+  -ID:\\huilang3\touping ^
+  -ID:\\huilang3\libjpeg-turbo-src\libjpeg-turbo-3.1.4.1\src ^
+  D:\\huilang3\libjpeg-turbo-build\libturbojpeg.so ^
+  -llog ^
+  -o D:\\huilang3\touping\libhuilang_native_encoder.so
+
+  编译完成后生成 libhuilang_native_encoder.so  放入安卓jniLibs/arm64-v8a/  

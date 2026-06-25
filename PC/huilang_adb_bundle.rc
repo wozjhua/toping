@@ -1,0 +1,5 @@
+#include "huilang_adb_bundle_resource.h"
+
+IDR_BIN_ADB_EXE RCDATA "adb.exe"
+IDR_BIN_ADBWINAPI_DLL RCDATA "AdbWinApi.dll"
+IDR_BIN_ADBWINUSBAPI_DLL RCDATA "AdbWinUsbApi.dll"

@@ -1,0 +1,135 @@
+--- a/d3d11_device.cpp
++++ b/d3d11_device.cpp
+@@ -1,8 +1,61 @@
+ #include "d3d11_renderer.h"
++#include <d3dcompiler.h>
++
++#pragma comment(lib, "d3dcompiler.lib")
+ 
+ // D3D11 device, swap chain, shader resources, and window sizing.
+ 
+ // D3D11Renderer device, texture upload and present path.
++
++namespace {
++static const char* kMirrorEnhancePSHlsl = R"(
++Texture2D gTex : register(t0);
++SamplerState gSampler : register(s0);
++
++cbuffer UpscaleCB : register(b0)
++{
++    float2 gTexelSize;
++    float  gSharpness;
++    float  gPadding;
++};
++
++struct PSIn
++{
++    float4 pos : SV_POSITION;
++    float2 uv  : TEXCOORD0;
++};
++
++float3 SampleRgb(float2 uv)
++{
++    return gTex.SampleLevel(gSampler, uv, 0).rgb;
++}
++
++float4 main(PSIn i) : SV_Target
++{
++    const float2 t = gTexelSize;
++
++    const float3 c = SampleRgb(i.uv);
++    const float3 l = SampleRgb(i.uv + float2(-t.x, 0.0));
++    const float3 r = SampleRgb(i.uv + float2( t.x, 0.0));
++    const float3 u = SampleRgb(i.uv + float2(0.0, -t.y));
++    const float3 d = SampleRgb(i.uv + float2(0.0,  t.y));
++
++    const float3 blur = (l + r + u + d) * 0.25;
++    const float3 detail = c - blur;
++
++    // Unsharp mask with a small clamp to reduce halos around UI text and edges.
++    float3 outColor = c + detail * gSharpness * 1.35;
++
++    const float3 mn = min(c, min(min(l, r), min(u, d)));
++    const float3 mx = max(c, max(max(l, r), max(u, d)));
++    const float3 range = mx - mn;
++    outColor = clamp(outColor, mn - range * 0.25, mx + range * 0.25);
++
++    return float4(saturate(outColor), 1.0);
++}
++)";
++}
++
+ 
+ bool D3D11Renderer::createDevice() {
+     UINT flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_VIDEO_SUPPORT;
+@@ -139,6 +192,70 @@
+         if (vs_) { vs_->Release(); vs_ = nullptr; }
+         return false;
+     }
++
++    // Optional low-latency video enhancement shader.  If compilation fails, keep the
++    // original copy shader path alive so the mirror still starts normally.
++    ID3DBlob* enhanceBlob = nullptr;
++    ID3DBlob* errorBlob = nullptr;
++    UINT compileFlags = D3DCOMPILE_ENABLE_STRICTNESS;
++#if defined(_DEBUG)
++    compileFlags |= D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
++#else
++    compileFlags |= D3DCOMPILE_OPTIMIZATION_LEVEL3;
++#endif
++
++    hr = D3DCompile(
++        kMirrorEnhancePSHlsl,
++        std::strlen(kMirrorEnhancePSHlsl),
++        "MirrorEnhancePS",
++        nullptr,
++        nullptr,
++        "main",
++        "ps_4_0",
++        compileFlags,
++        0,
++        &enhanceBlob,
++        &errorBlob
++    );
++
++    if (FAILED(hr)) {
++        if (errorBlob) {
++            OutputDebugStringA(static_cast<const char*>(errorBlob->GetBufferPointer()));
++            errorBlob->Release();
++        }
++        psEnhance_ = nullptr;
++        upscaleCb_ = nullptr;
++        return true;
++    }
++    if (errorBlob) {
++        errorBlob->Release();
++    }
++
++    hr = device_->CreatePixelShader(
++        enhanceBlob->GetBufferPointer(),
++        enhanceBlob->GetBufferSize(),
++        nullptr,
++        &psEnhance_
++    );
++    enhanceBlob->Release();
++
++    if (FAILED(hr)) {
++        psEnhance_ = nullptr;
++        upscaleCb_ = nullptr;
++        return true;
++    }
++
++    D3D11_BUFFER_DESC cbd{};
++    cbd.ByteWidth = sizeof(UpscaleCB);
++    cbd.Usage = D3D11_USAGE_DEFAULT;
++    cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
++    hr = device_->CreateBuffer(&cbd, nullptr, &upscaleCb_);
++    if (FAILED(hr)) {
++        if (psEnhance_) { psEnhance_->Release(); psEnhance_ = nullptr; }
++        upscaleCb_ = nullptr;
++        return true;
++    }
++
+     return true;
+ }
+ 

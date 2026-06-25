@@ -1,0 +1,58 @@
+--- d3d11_native(243).cpp	2026-05-10 04:08:31.182679174 +0000
++++ cpp_video_tuning_patch/d3d11_native.cpp	2026-05-10 04:09:49.497628542 +0000
+@@ -152,6 +152,7 @@
+ #include "mirror_receiver.h"
+ #include "audio_receiver.h"
+ #include "center_video_receiver.h"
++#include "video_stream_tuning.h"
+ 
+ struct Vertex {
+     float x, y, z;
+@@ -303,8 +304,8 @@
+     bool allowTearing_{false};
+     bool splitDebugOverlayVisible_{false};
+ 
+-    static constexpr int ROI_REGION_CENTER = 0;
+-    static constexpr int ROI_REGION_BOTTOM = 1;
++    static constexpr int ROI_REGION_CENTER = VideoStreamTuning::kRoiRegionCenter;
++    static constexpr int ROI_REGION_BOTTOM = VideoStreamTuning::kRoiRegionBottom;
+ 
+     struct RuntimeSettings {
+         UINT hudKey = VK_F3;
+@@ -325,21 +326,21 @@
+         int cropSize = 640;
+         int cropSplitParts = 2;
+         int captureMode = 1; // 1=全屏缩放, 0=中心裁剪
+-        int videoPreset = 2; // H.264中心流分辨率跟随JPEG/全屏分辨率；该值仅用于状态显示/兼容旧命令。
+-        int videoWidth = 1600;
+-        int videoHeight = 1024;
+-        int videoBitrateMbps = 40;//默认40M码率
+-        int videoFps = 144;
+-        int videoQualityMode = 1; // 0=低延迟全I帧, 1=高画质全I帧, 2=高压缩GOP
+-        bool centerRoiUseVideo = true; // true=视频 ROI 走 H.264；false=整帧/视频区域走 JPEG
+-        int roiRegion = 1;               // 0=center：中心视频；1=bottom：底部视频，中心高价值区保持 JPEG
+-        int roiEdgeQualityReduction = 10; // 外围区域 Q 降低值：0..40
+-        int roiEdgeScalePercent = 75;     // 外围区域横向编码缩放：50..100
+-        int roiWidthPercent = 63;         // center H.264 模式：视频 ROI 宽度百分比
+-        int roiHeightPercent = 20;        // center H.264 模式：视频 ROI 高度；bottom H.264 模式：底部视频高度
+-        int roiTopLowPercent = 20;        // JPEG 2/6/2：顶部低价值区高度百分比，默认 20
+-        int roiJpegCenterWidthPercent = 60; // JPEG 2/6/2：中间高价值区宽度百分比，默认 60
+-        int roiCenterCpuWeightPercent = 100; // 中心 JPEG 列宽 CPU 权重强度：0=平均，100=默认，200=更偏大核
++        int videoPreset = VideoStreamTuning::kVideoPresetDefault; // H.264中心流分辨率跟随JPEG/全屏分辨率；该值仅用于状态显示/兼容旧命令。
++        int videoWidth = VideoStreamTuning::kVideoWidthDefault;
++        int videoHeight = VideoStreamTuning::kVideoHeightDefault;
++        int videoBitrateMbps = VideoStreamTuning::kVideoBitrateDefaultMbps;
++        int videoFps = VideoStreamTuning::kVideoFpsDefault;
++        int videoQualityMode = VideoStreamTuning::kVideoQualityDefault; // 0=低延迟全I帧, 1=高画质全I帧, 2=高压缩GOP
++        bool centerRoiUseVideo = VideoStreamTuning::kCenterRoiUseVideoDefault; // true=视频 ROI 走 H.264；false=整帧/视频区域走 JPEG
++        int roiRegion = VideoStreamTuning::kRoiRegionDefault; // 0=center：中心视频；1=bottom：底部视频，中心高价值区保持 JPEG
++        int roiEdgeQualityReduction = VideoStreamTuning::kRoiEdgeQualityReductionDefault; // 外围区域 Q 降低值
++        int roiEdgeScalePercent = VideoStreamTuning::kRoiEdgeScalePercentDefault;     // 外围区域横向编码缩放
++        int roiWidthPercent = VideoStreamTuning::kRoiWidthPercentDefault;         // center H.264 模式：视频 ROI 宽度百分比
++        int roiHeightPercent = VideoStreamTuning::kRoiHeightPercentDefault;        // center H.264 模式：视频 ROI 高度；bottom H.264 模式：底部视频高度
++        int roiTopLowPercent = VideoStreamTuning::kRoiTopLowPercentDefault;        // JPEG 2/6/2：顶部低价值区高度百分比
++        int roiJpegCenterWidthPercent = VideoStreamTuning::kRoiJpegCenterWidthPercentDefault; // JPEG 2/6/2：中间高价值区宽度百分比
++        int roiCenterCpuWeightPercent = VideoStreamTuning::kRoiCenterCpuWeightPercentDefault; // 中心 JPEG 列宽 CPU 权重强度：0=平均，100=默认，200=更偏大核
+         bool strictHybridSync = false;     // H.264中心视频开启时，JPEG外圈和中心视频必须按同一帧时间戳同步显示
+         bool compactHudMode = false;       // 精简模式：HUD只显示画面总览和实际帧率，F2隐藏右侧视频/ROI参数区
+         bool debugHudMode = true;          // 调试模式：仅在未开启精简模式时显示完整HUD诊断信息

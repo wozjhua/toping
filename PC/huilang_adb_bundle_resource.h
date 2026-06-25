@@ -1,0 +1,5 @@
+#pragma once
+
+#define IDR_BIN_ADB_EXE 101
+#define IDR_BIN_ADBWINAPI_DLL 102
+#define IDR_BIN_ADBWINUSBAPI_DLL 103
