@@ -42,6 +42,10 @@
 - libjpeg-turbo 3.1.4.1
 - Android Studio / Gradle Wrapper
 
+## 性能与散热说明
+
+极低延迟模式依赖高性能 Android 设备、稳定散热和未被系统温控明显降频的运行状态。推荐使用 Snapdragon 8 Elite 级别或同等级旗舰 SoC，并配合良好散热；如果设备已经因温控降频，高 FPS JPEG 编码链路的延迟和稳定性都会受到影响。
+
 ## Android 工程
 
 Android 工程位于：
