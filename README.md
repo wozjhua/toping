@@ -33,6 +33,8 @@
 
 如果需要完整离线构建环境，请参考 [THIRD_PARTY_DEPENDENCIES.md](THIRD_PARTY_DEPENDENCIES.md)。
 
+该说明文件也列出了 FFmpeg、libjpeg-turbo 等依赖的官方下载入口和推荐下载类型。
+
 ## 基本环境
 
 - Windows
